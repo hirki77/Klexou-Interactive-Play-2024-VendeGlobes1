@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Vent des Globes n°1</title>
+
+<!-- Intégration de la police SF Pro -->
+<style>
+    @font-face {
+        font-family: 'SF Pro';
+        src: url('SF-Pro-Display-Regular.otf') format('opentype');
+        font-weight: normal;
+        font-style: normal;
+    }
+    
+    body {
+        font-family: 'SF Pro', Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: url('https://fr-minecraft.net/upload/wallpapers/images/fr-minecraft_wallpaper_3RB6.png') no-repeat center center fixed;
+        background-size: cover;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #ffffff;
+        flex-direction: column;
+    }
+
+    .container {
+        background-color: rgba(0, 0, 0, 0.6); /* Fond semi-transparent pour lisibilité */
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        max-width: 600px;
+        text-align: center;
+    }
+
+    h1 {
+        color: #ffffff;
+        margin-bottom: 20px;
+    }
+
+    .question {
+        font-weight: bold;
+        font-size: 1.2em;
+        margin-bottom: 15px;
+        color: #ffc107;
+    }
+
+    .options {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 1fr 1fr;
+        margin-top: 10px;
+    }
+
+    .option {
+        background-color: #6200ea;
+        color: white;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s, transform 0.3s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .option:hover {
+        background-color: #3700b3;
+        transform: scale(1.05);
+    }
+
+    .option.incorrect {
+        background-color: #e53935;
+    }
+
+    .option.correct {
+        background-color: #43a047;
+    }
+
+    .feedback {
+        margin-top: 20px;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+
+    .score, .replay-button {
+        display: none;
+        margin-top: 20px;
+    }
+
+    .replay-button button {
+        background-color: #ff5722;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .copyright {
+        font-size: 0.8em;
+        color: #000000;
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Quiz Vent des Globes n°1</h1>
+    <div class="question-container">
+        <div class="question" id="question"></div>
+        <div class="options" id="options"></div>
+        <div class="feedback" id="feedback"></div>
+    </div>
+    <div class="score" id="score"></div>
+    <div class="replay-button" id="replay">
+        <button onclick="restartQuiz()">Rejouer</button>
+    </div>
+</div>
+
+<div class="copyright">
+    <p>© Crée par Sofiane LAMOUROUX - Atelier Numérique 2024</p>
+</div>
+
+<script>
+const questions = [
+    { question: "Quelle est la zone climatique située autour de l'équateur ?", options: ["Zone froide", "Zone tempérée", "Zone chaude"], answer: 2 },
+    { question: "Dans quelle zone climatique se trouve la France ?", options: ["Zone froide", "Zone tempérée", "Zone chaude"], answer: 1 },
+    { question: "Quel climat en France est caractérisé par des hivers doux, des étés chauds et secs ?", options: ["Climat océanique", "Climat continental", "Climat méditerranéen"], answer: 2 },
+    { question: "Quel climat est dominant en France avec des précipitations régulières ?", options: ["Climat océanique", "Climat méditerranéen", "Climat montagnard"], answer: 0 },
+    { question: "Quel est le climat de la Guyane ?", options: ["Climat maritime tropical", "Climat équatorial", "Climat méditerranéen"], answer: 1 },
+    { question: "Quel climat est caractérisé par un fort enneigement en hiver ?", options: ["Climat océanique", "Climat montagnard", "Climat continental"], answer: 1 },
+    { question: "Quel climat en France est caractérisé par des hivers rudes et des étés chauds ?", options: ["Climat océanique", "Climat continental", "Climat méditerranéen"], answer: 1 },
+    {
+        question: "Dans quelles régions d'Outre-mer trouve-t-on un climat maritime tropical ?",
+        options: [
+            "A. Guyane et Saint-Pierre-et-Miquelon",
+            "B. Antilles, Réunion, Mayotte, Nouvelle-Calédonie, Polynésie, Wallis-et-Futuna",
+            "C. Réunion, Mayotte, et Guyane"
+        ],
+        answer: 1 // Option correcte.
+    }
+];
+
+let currentQuestion = 0;
+let score = 0;
+
+function loadQuestion() {
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const feedbackEl = document.getElementById("feedback");
+    feedbackEl.innerHTML = "";
+    questionEl.textContent = `${currentQuestion + 1}. ${questions[currentQuestion].question}`;
+    optionsEl.innerHTML = "";
+
+    questions[currentQuestion].options.forEach((option, index) => {
+        const button = document.createElement("button");
+        button.className = "option";
+        button.textContent = option;
+        button.onclick = () => selectAnswer(index, button);
+        optionsEl.appendChild(button);
+    });
+}
+
+function selectAnswer(selected, button) {
+    const isCorrect = selected === questions[currentQuestion].answer;
+    button.classList.add(isCorrect ? "correct" : "incorrect");
+    showFeedback(isCorrect);
+}
+
+function showFeedback(isCorrect) {
+    const feedbackEl = document.getElementById("feedback");
+    if (isCorrect) {
+        score++;
+        feedbackEl.textContent = "Bonne réponse !";
+    } else {
+        feedbackEl.textContent = "Mauvaise réponse.";
+    }
+
+    setTimeout(() => {
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+            loadQuestion();
+        } else {
+            showScore();
+        }
+    }, 1500);
+}
+
+function showScore() {
+    document.querySelector(".question-container").style.display = "none";
+    document.getElementById("score").style.display = "block";
+    document.getElementById("score").innerHTML = `<p>Score final : ${score} / ${questions.length}</p>`;
+    document.getElementById("replay").style.display = "block";
+}
+
+function restartQuiz() {
+    score = 0;
+    currentQuestion = 0;
+    document.querySelector(".question-container").style.display = "block";
+    document.getElementById("score").style.display = "none";
+    document.getElementById("replay").style.display = "none";
+    loadQuestion();
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
